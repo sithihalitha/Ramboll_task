@@ -23,7 +23,7 @@ namespace WorldBankData
         {
             try
             {
-                var response = await _httpClient.GetAsync($"https://api.worldbank.org/v2/datacatalog?format=json&q={query}");
+                var response = await _httpClient.GetAsync($"https://api.worldbank.org/v2/datacatalog?format=json");
                 response.EnsureSuccessStatusCode();
                 var responseContent = await response.Content.ReadAsStringAsync();
 
