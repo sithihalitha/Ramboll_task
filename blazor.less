@@ -1,0 +1,93 @@
+@page "/search"
+
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Text.Json.Serialization
+
+<h1>Search</h1>
+
+<div class="form-group">
+    <label for="query">Query:</label>
+    <input type="text" class="form-control" id="query" @bind-value="searchQuery" />
+</div>
+<button class="btn btn-primary" @onclick="Search">Search</button>
+
+@if (searchResults != null)
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Column 1</th>
+                <th>Column 2</th>
+                <th>Column 3</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in searchResults)
+            {
+                <tr>
+                    <td>@item.Column1</td>
+                    <td>@item.Column2</td>
+                    <td>@item.Column3</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                var pageNumber = i;
+                <li class="page-item @(pageNumber == currentPage ? "active" : "")">
+                    <a class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@code {
+    private HttpClient httpClient;
+    private string searchQuery;
+    private List<SearchResult> searchResults;
+    private int currentPage = 1;
+    private int totalPages;
+
+    protected override void OnInitialized()
+    {
+        httpClient = new HttpClient();
+    }
+
+    private async Task Search()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<SearchResult>>("https://api.example.com/search?q=" + searchQuery);
+            searchResults = response;
+            totalPages = (int)Math.Ceiling(searchResults.Count() / 10d);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        StateHasChanged();
+    }
+
+    private class SearchResult
+    {
+        [JsonPropertyName("column1")]
+        public string Column1 { get; set; }
+
+        [JsonPropertyName("column2")]
+        public string Column2 { get; set; }
+
+        [JsonPropertyName("column3")]
+        public string Column3 { get; set; }
+    }
+}
